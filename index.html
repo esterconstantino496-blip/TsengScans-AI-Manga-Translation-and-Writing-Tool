@@ -32,34 +32,34 @@
       const [translations, setTranslations] = useState([]);
       const [bubbleTranslations, setBubbleTranslations] = useState([]);
       const [editedTranslations, setEditedTranslations] = useState([]);
-             const [placedText, setPlacedText] = useState([]);
-       const [placingIndex, setPlacingIndex] = useState(null);
-       const [loading, setLoading] = useState(false);
-       const [cropLoading, setCropLoading] = useState(false);
-       const [error, setError] = useState(null);
-       const [isCropMode, setIsCropMode] = useState(false);
-       const [rawDrawStart, setRawDrawStart] = useState(null);
-       const [rawDrawEnd, setRawDrawEnd] = useState(null);
-       const [isDrawing, setIsDrawing] = useState(false);
-       const [drawStart, setDrawStart] = useState(null);
-       const [drawEnd, setDrawEnd] = useState(null);
-       const [imageDimensions, setImageDimensions] = useState(null);
-       const [customTexts, setCustomTexts] = useState([]);
-       const [cleanOriginalDimensions, setCleanOriginalDimensions] = useState(null);
-       const canvasRef = useRef(null);
+      const [placedText, setPlacedText] = useState([]);
+      const [placingIndex, setPlacingIndex] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [cropLoading, setCropLoading] = useState(false);
+      const [error, setError] = useState(null);
+      const [isCropMode, setIsCropMode] = useState(false);
+      const [rawDrawStart, setRawDrawStart] = useState(null);
+      const [rawDrawEnd, setRawDrawEnd] = useState(null);
+      const [isDrawing, setIsDrawing] = useState(false);
+      const [drawStart, setDrawStart] = useState(null);
+      const [drawEnd, setDrawEnd] = useState(null);
+      const [imageDimensions, setImageDimensions] = useState(null);
+      const [customTexts, setCustomTexts] = useState([]);
+      const [cleanOriginalDimensions, setCleanOriginalDimensions] = useState(null);
+      const canvasRef = useRef(null);
       const handleRawUpload = async (e) => {
         const file = e.target.files[0];
         if (!file || !file.type.startsWith('image/')) return;
         const url = URL.createObjectURL(file);
         setRawImage(url);
-       
+      
         // Get image dimensions
         const img = new Image();
         img.onload = () => {
           setImageDimensions({ width: img.width, height: img.height });
         };
         img.src = url;
-       
+      
         setLoading(true);
         setError(null);
         const formData = new FormData();
@@ -84,7 +84,7 @@
         const url = URL.createObjectURL(file);
         setCleanImage(url);
         setPlacedText([]);
-       
+      
         // Get original image dimensions for download scaling
         const img = new Image();
         img.onload = () => {
@@ -120,21 +120,21 @@
           console.log('Early return - missing data:', { isCropMode, rawDrawStart, rawImage });
           return;
         }
-       
+      
         let rect = null;
         try {
           console.log('Starting crop process...');
           rect = e.target.getBoundingClientRect();
           console.log('Got bounding rect:', rect);
-         
+        
           // Get the final mouse position for the end point
           const finalX = e.clientX - rect.left;
           const finalY = e.clientY - rect.top;
-         
+        
           // Update the end point with the final position
           const updatedRawDrawEnd = { x: finalX, y: finalY };
           console.log('Final mouse position:', updatedRawDrawEnd);
-         
+        
           const canvas = document.createElement("canvas");
           const img = new Image();
           img.crossOrigin = "anonymous";
@@ -142,20 +142,20 @@
           console.log('Starting image load for:', rawImage);
           img.onload = async () => {
             console.log('Image loaded successfully, dimensions:', { width: img.width, height: img.height });
-           
+          
             try {
               console.log('Image loaded, dimensions:', { width: img.width, height: img.height });
-             
+            
               // Debug: Show the raw coordinates
               console.log('Raw coordinates - Start:', rawDrawStart, 'End:', updatedRawDrawEnd);
-             
+            
               // Calculate the selection coordinates properly
               const x1 = Math.min(rawDrawStart.x, updatedRawDrawEnd.x);
               const y1 = Math.min(rawDrawStart.y, updatedRawDrawEnd.y);
               const width = Math.abs(updatedRawDrawEnd.x - rawDrawStart.x);
               const height = Math.abs(updatedRawDrawEnd.y - rawDrawStart.y);
               console.log('Selection coordinates:', { x1, y1, width, height });
-             
+            
               // Check if we have a valid selection (minimum size)
               if (width < 5 || height < 5) {
                 console.log('Selection too small, aborting');
@@ -165,10 +165,10 @@
                 setRawDrawEnd(null);
                 return;
               }
-             
+            
               // Show the user what area will be cropped (but don't require confirmation)
               console.log(`Cropping area: ${width}×${height}px at position (${x1}, ${y1})`);
-             
+            
               // Calculate scaling and offsets to mimic object-contain
               const originalWidth = img.width;
               const originalHeight = img.height;
@@ -183,9 +183,9 @@
               const displayY = y1;
               const displayWidth = width;
               const displayHeight = height;
-             
+            
               console.log('Display coordinates (exact):', { displayX, displayY, displayWidth, displayHeight });
-             
+            
               // Crop EXACTLY what's in the red dashed rectangle (no padding)
               const cropX = displayX;
               const cropY = displayY;
@@ -217,78 +217,78 @@
               const enlargementFactor = 2; // Reduced from 4x to 2x for better balance
               canvas.width = originalCropWidth * enlargementFactor;
               canvas.height = originalCropHeight * enlargementFactor;
-             
+            
               const ctx = canvas.getContext("2d");
-             
+            
               // Enable high-quality image smoothing
               ctx.imageSmoothingEnabled = true;
               ctx.imageSmoothingQuality = 'high';
-             
+            
               // Step 1: Crop directly from original image at full resolution
               ctx.drawImage(img, originalCropX, originalCropY, originalCropWidth, originalCropHeight, 0, 0, originalCropWidth * enlargementFactor, originalCropHeight * enlargementFactor);
-             
+            
               // Step 2: Apply image enhancement techniques
               const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
               const data = imageData.data;
-             
+            
               // Apply contrast enhancement and noise reduction
               for (let i = 0; i < data.length; i += 4) {
                 const r = data[i];
                 const g = data[i + 1];
                 const b = data[i + 2];
-               
+              
                 // Convert to grayscale for text processing
                 const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-               
+              
                 // Apply contrast enhancement (more nuanced approach)
                 const contrastFactor = 1.5;
                 const enhanced = Math.max(0, Math.min(255, (gray - 128) * contrastFactor + 128));
-               
+              
                 // No hard threshold - keep grayscale for GPT to handle nuances
                 const final = enhanced;
-               
+              
                 // Set all channels to the same value for grayscale
                 data[i] = final; // Red
                 data[i + 1] = final; // Green
                 data[i + 2] = final; // Blue
                 // Alpha remains unchanged
               }
-             
+            
               // Step 3: Apply sharpening filter
               const sharpenedData = new Uint8ClampedArray(data);
               const canvasWidth = canvas.width;
               const canvasHeight = canvas.height;
-             
+            
               // Milder sharpening kernel for better results
               const kernel = [
                 [0, -0.5, 0],
                 [-0.5, 3, -0.5],
                 [0, -0.5, 0]
               ];
-             
+            
               for (let y = 1; y < canvasHeight - 1; y++) {
                 for (let x = 1; x < canvasWidth - 1; x++) {
                   const idx = (y * canvasWidth + x) * 4;
                   let sum = 0;
-                 
+                
                   for (let ky = 0; ky < 3; ky++) {
                     for (let kx = 0; kx < 3; kx++) {
                       const pixelIdx = ((y + ky - 1) * canvasWidth + (x + kx - 1)) * 4;
                       sum += data[pixelIdx] * kernel[ky][kx];
                     }
                   }
-                 
+                
                   const sharpened = Math.max(0, Math.min(255, sum));
                   sharpenedData[idx] = sharpened;
                   sharpenedData[idx + 1] = sharpened;
                   sharpenedData[idx + 2] = sharpened;
                 }
               }
-             
+            
               // Step 4: Apply the enhanced image data back to canvas
               const enhancedImageData = new ImageData(sharpenedData, canvasWidth, canvasHeight);
               ctx.putImageData(enhancedImageData, 0, 0);
-             
+            
               console.log('Canvas created successfully with enhanced 2x enlargement and image processing');
               // Convert to high quality PNG
               const croppedDataUrl = canvas.toDataURL("image/png", 1.0);
@@ -315,7 +315,7 @@
                 console.log('API response received:', res.status);
                 const data = await res.json();
                 console.log('API data:', data);
-               
+              
                 if (res.ok) {
                   setBubbleTranslations((prev) => [...prev, ...data]);
                   console.log('Crop successful:', data);
@@ -393,7 +393,7 @@
         const updated = [...editedTranslations];
         updated[index].en = value;
         setEditedTranslations(updated);
-       
+      
         setPlacedText(prev => prev.map(item =>
           item.index === index ? { ...item, en: value } : item
         ));
@@ -402,7 +402,7 @@
         const updated = [...editedTranslations];
         updated[index].color = updated[index].color === "#000000" ? "#ffffff" : "#000000";
         setEditedTranslations(updated);
-       
+      
         setPlacedText(prev => prev.map(item =>
           item.index === index ? { ...item, color: updated[index].color } : item
         ));
@@ -411,7 +411,7 @@
         const updated = [...editedTranslations];
         updated[index].fontSize = parseInt(value);
         setEditedTranslations(updated);
-       
+      
         setPlacedText(prev => prev.map(item =>
           item.index === index ? { ...item, fontSize: parseInt(value) } : item
         ));
@@ -420,7 +420,7 @@
         const updated = [...editedTranslations];
         updated[index].fontFamily = value;
         setEditedTranslations(updated);
-       
+      
         setPlacedText(prev => prev.map(item =>
           item.index === index ? { ...item, fontFamily: value } : item
         ));
@@ -434,37 +434,37 @@
         const baseSize = 14;
         const maxSize = 24;
         const minSize = 6; // Reduced minimum size
-       
+      
         // Calculate based on text length and box size
         const textLength = text.length;
         const boxArea = width * height;
-       
+      
         let fontSize = baseSize;
-       
+      
         // Adjust based on text length
         if (textLength > 50) fontSize = Math.max(minSize, fontSize - 6);
         else if (textLength > 30) fontSize = Math.max(minSize, fontSize - 3);
         else if (textLength < 10) fontSize = Math.min(maxSize, fontSize + 2);
-       
+      
         // Adjust based on box size
         if (boxArea < 1000) fontSize = Math.max(minSize, fontSize - 3);
         else if (boxArea > 5000) fontSize = Math.min(maxSize, fontSize + 2);
-       
+      
         // Additional adjustment for very long text
         if (textLength > 80) fontSize = Math.max(minSize, fontSize - 2);
-       
+      
         // Ensure text fits within the box
         const estimatedCharsPerLine = Math.floor(width / (fontSize * 0.6)); // Rough estimate
         const estimatedLines = Math.ceil(textLength / estimatedCharsPerLine);
         const estimatedHeight = estimatedLines * fontSize * 1.2; // Line height factor
-       
+      
         if (estimatedHeight > height) {
           fontSize = Math.max(minSize, Math.floor(height / estimatedLines / 1.2));
         }
-       
+      
         return fontSize;
       };
-             const handleMouseDown = (e) => {
+      const handleMouseDown = (e) => {
          if (placingIndex === null) {
            console.log('Mouse down - no placingIndex set');
            return;
@@ -526,10 +526,10 @@
              console.log('Attempting to place regular translation, placingIndex:', placingIndex);
              console.log('editedTranslations array:', editedTranslations);
              console.log('editedTranslations length:', editedTranslations.length);
-            
+           
              const current = editedTranslations[placingIndex];
              console.log('Current translation object:', current);
-            
+           
              if (!current) {
                console.error('Translation not found for index:', placingIndex);
                console.error('Available indices:', editedTranslations.map((_, i) => i));
@@ -540,18 +540,18 @@
                setDrawEnd(null);
                return;
              }
-            
+           
              console.log('Placing regular translation:', current);
              const optimalFontSize = calculateOptimalFontSize(current.en, width, height);
              console.log('Calculated optimal font size:', optimalFontSize);
-            
+           
              // Remove any existing placement for this translation
              setPlacedText(prev => {
                const filtered = prev.filter(item => item.index !== placingIndex);
                console.log('Removed existing placements, new placedText:', filtered);
                return filtered;
              });
-            
+           
              // Add new placement
              setPlacedText(prev => {
                const newPlacedText = [...prev, {
@@ -566,7 +566,7 @@
                console.log('Added new placement, updated placedText:', newPlacedText);
                return newPlacedText;
              });
-            
+           
              // Update the font size in editedTranslations
              const updated = [...editedTranslations];
              updated[placingIndex].fontSize = optimalFontSize;
@@ -640,37 +640,37 @@
          const canvas = document.createElement('canvas');
          const ctx = canvas.getContext('2d');
          const img = new Image();
-        
+       
          img.onload = () => {
            // Use original dimensions for high quality
            canvas.width = cleanOriginalDimensions.width;
            canvas.height = cleanOriginalDimensions.height;
-          
+         
            // Draw the clean image at original resolution
            ctx.drawImage(img, 0, 0, cleanOriginalDimensions.width, cleanOriginalDimensions.height);
-          
+         
            // Get the displayed image's bounding rect to calculate scaling
            const displayedImg = document.querySelector('img[src="' + cleanImage + '"]');
            if (!displayedImg) {
              alert('Could not find displayed image for scaling calculation.');
              return;
            }
-          
+         
            const displayRect = displayedImg.getBoundingClientRect();
-          
+         
            // Calculate the uniform content display scale (for object-contain)
            const contentScaleDisplay = Math.min(
              displayRect.width / cleanOriginalDimensions.width,
              displayRect.height / cleanOriginalDimensions.height
            );
            const scaleToOriginal = 1 / contentScaleDisplay;
-          
+         
            // Calculate displayed content dimensions and offsets
            const contentDisplayWidth = cleanOriginalDimensions.width * contentScaleDisplay;
            const contentDisplayHeight = cleanOriginalDimensions.height * contentScaleDisplay;
            const contentOffsetX = (displayRect.width - contentDisplayWidth) / 2;
            const contentOffsetY = (displayRect.height - contentDisplayHeight) / 2;
-          
+         
            // Helper function to draw scaled text
            const drawScaledText = (textObj) => {
              // Map display coordinates to original image coordinates
@@ -682,13 +682,13 @@
              const originalPadding = 2 * scaleToOriginal; // UI padding: 2px scaled
              const maxTextWidth = originalWidth - 2 * originalPadding; // Left and right padding
              const lineHeight = originalFontSize * 1.2; // Match UI line-height: 1.2
-            
+           
              ctx.font = `${originalFontSize}px ${textObj.fontFamily}`;
              ctx.fillStyle = textObj.color;
              ctx.textAlign = 'center';
              ctx.textBaseline = 'middle';
              ctx.imageSmoothingQuality = 'high';
-            
+           
              // Add text shadow for better visibility
              if (textObj.color === "#ffffff") {
                ctx.shadowColor = 'rgba(0,0,0,0.8)';
@@ -701,19 +701,19 @@
                ctx.shadowOffsetX = 1 * scaleToOriginal;
                ctx.shadowOffsetY = 1 * scaleToOriginal;
              }
-            
+           
              // Calculate text position (center of the box)
              const textX = originalX + originalWidth / 2;
-            
+           
              // Word wrap the text: First pass to collect lines
              const words = textObj.text ? textObj.text.split(' ') : textObj.en.split(' ');
              let lines = [];
              let currentLine = '';
-            
+           
              words.forEach(word => {
                const testLine = currentLine + word + ' ';
                const metrics = ctx.measureText(testLine);
-              
+             
                if (metrics.width > maxTextWidth && currentLine !== '') {
                  lines.push(currentLine.trim());
                  currentLine = word + ' ';
@@ -735,127 +735,74 @@
                }
              });
              if (currentLine) lines.push(currentLine.trim());
-            
+           
              // Enforce height limits and clipping (mimic overflow: hidden)
              const totalTextHeight = lines.length * lineHeight;
              if (totalTextHeight > originalHeight) {
                const maxLines = Math.floor(originalHeight / lineHeight);
                lines = lines.slice(0, maxLines);
              }
-            
+           
              // Calculate starting Y for true vertical centering
              const startY = originalY + (originalHeight - (lines.length * lineHeight)) / 2 + (lineHeight / 2); // Adjust for middle baseline
-            
+           
              // Second pass: Draw the lines
              lines.forEach((line, index) => {
                ctx.fillText(line, textX, startY + (index * lineHeight));
              });
-            
+           
              // Reset shadow
              ctx.shadowColor = 'transparent';
              ctx.shadowBlur = 0;
              ctx.shadowOffsetX = 0;
              ctx.shadowOffsetY = 0;
            };
-          
+         
            // Draw placed translations
            placedText.forEach(text => {
              if (text.en && text.en.trim() !== '') {
                drawScaledText(text);
              }
            });
-          
+         
            // Draw custom texts
            customTexts.forEach(text => {
              if (text.isPlaced && text.text.trim() !== '') {
                drawScaledText(text);
              }
            });
-          
+         
            // Download the image
            const link = document.createElement('a');
            link.download = 'edited_manga_panel.png';
            link.href = canvas.toDataURL();
            link.click();
          };
-        
+       
          img.src = cleanImage;
        };
       return (
-        <div className="flex h-full overflow-hidden">
-          {/* Left Panel: Raw Image Upload & Translations */}
-          <div className="w-1/2 p-4 flex flex-col overflow-hidden border-r">
-            {/* Fixed top section (header, input, image) */}
-            <div className="flex-shrink-0">
+        <div className="flex flex-col h-full overflow-hidden">
+          {/* Top Row: Raw and Clean Panels Side by Side */}
+          <div className="flex flex-[2] overflow-hidden border-b">
+            {/* Left Top: Raw Panel */}
+            <div className="w-1/2 p-4 flex flex-col overflow-hidden">
               <h1 className="text-xl font-bold mb-4">Raw Manga Panel</h1>
-              <input type="file" accept="image/*" onChange={handleRawUpload} className="mb-4 p-2 border rounded" />
-             
-              {/* Crop button and Clear Crops button */}
-              <div className="flex space-x-2 mb-4">
-                <button onClick={() => setIsCropMode(!isCropMode)} className="px-3 py-1 bg-blue-600 text-white rounded text-sm">
-                  {isCropMode ? "❌ Cancel Crop" : "✂️ Crop Speech Bubbles"}
-                </button>
-                {isCropMode && (
-                  <div className="text-sm text-blue-600 mt-2">
-                    💡 Click and drag to select an area, then release to crop automatically
-                  </div>
-                )}
-                {bubbleTranslations.length > 0 && (
-                  <button onClick={clearBubbleTranslations} className="px-3 py-1 bg-red-600 text-white rounded text-sm">
-                    🗑️ Clear Crops
-                  </button>
-                )}
-                {isCropMode && (
-                  <div className="text-xs text-gray-600 mt-2">
-                    🔧 Enhanced processing: 2x enlargement + contrast + sharpening
-                  </div>
-                )}
-                {isCropMode && rawDrawStart && rawDrawEnd && imageDimensions && (
-                  <button
-                    onClick={() => {
-                      try {
-                        const imgElement = document.querySelector('img');
-                        if (!imgElement) {
-                          alert('Image element not found');
-                          return;
-                        }
-                        const rect = imgElement.getBoundingClientRect();
-                        const x = Math.min(rawDrawStart.x, rawDrawEnd.x);
-                        const y = Math.min(rawDrawStart.y, rawDrawEnd.y);
-                        const width = Math.abs(rawDrawStart.x - rawDrawEnd.x);
-                        const height = Math.abs(rawDrawStart.y - rawDrawEnd.y);
-                        const scaleX = imageDimensions.width / rect.width;
-                        const scaleY = imageDimensions.height / rect.height;
-                        const originalX = Math.floor(x * scaleX);
-                        const originalY = Math.floor(y * scaleY);
-                        const originalWidth = Math.floor(width * scaleX);
-                        const originalHeight = Math.floor(height * scaleY);
-                        alert(`Debug Info:\nDisplay: ${width}×${height}px\nOriginal: ${originalWidth}×${originalHeight}px\nScale: ${scaleX.toFixed(2)}×${scaleY.toFixed(2)}\nImage: ${imageDimensions.width}×${imageDimensions.height}px\nContainer: ${rect.width}×${rect.height}px`);
-                      } catch (error) {
-                        console.error('Debug button error:', error);
-                        alert('Error getting debug info. Check console for details.');
-                      }
-                    }}
-                    className="px-3 py-1 bg-green-600 text-white rounded text-sm"
-                  >
-                    🔍 Debug Coords
-                  </button>
-                )}
-              </div>
-             
-              {/* Raw image with drawing events */}
+              <input type="file" accept="image/*" onChange={handleRawUpload} className="mb-4 p-2 border rounded bg-gray-200" />
+              <button onClick={() => setIsCropMode(!isCropMode)} className="mb-4 px-3 py-1 bg-blue-600 text-white rounded text-sm">
+                {isCropMode ? "❌ Cancel Crop" : "✂️ Crop"}
+              </button>
               {rawImage && (
-                <div className="relative mb-4">
+                <div className="relative flex-1 overflow-auto">
                   <img
                     src={rawImage}
-                    className={`w-full max-h-80 object-contain border rounded ${isCropMode ? 'cursor-crosshair select-none' : 'cursor-default'}`}
+                    className={`w-auto max-w-full max-h-[60vh] object-contain object-left-top border rounded ${isCropMode ? 'cursor-crosshair select-none' : 'cursor-default'}`}
                     style={isCropMode ? { userSelect: 'none', pointerEvents: 'auto' } : {}}
                     onMouseDown={handleRawMouseDown}
                     onMouseMove={handleRawMouseMove}
                     onMouseUp={handleRawMouseUp}
                     draggable={!isCropMode}
                   />
-                  {/* Drawing rectangle for raw image - EXACTLY what will be cropped */}
                   {isCropMode && rawDrawStart && rawDrawEnd && (
                     <div
                       style={{
@@ -877,18 +824,132 @@
                   )}
                 </div>
               )}
-             
-              {/* Loading/error messages */}
-              {loading && <div className="p-3 bg-blue-100 text-blue-800 rounded mb-4">Processing full panel with GPT...</div>}
-              {cropLoading && <div className="p-3 bg-yellow-100 text-yellow-800 rounded mb-4">Processing cropped area...</div>}
+              {loading && <div className="p-3 bg-blue-100 text-blue-800 rounded mt-4">Processing full panel with GPT...</div>}
+              {cropLoading && <div className="p-3 bg-yellow-100 text-yellow-800 rounded mt-4">Processing cropped area...</div>}
             </div>
-           
-            {/* Scrollable translations area */}
-            <div className="flex-1 overflow-y-auto min-h-0">
-              {/* Full Panel Translations */}
+
+            {/* Right Top: Clean Panel */}
+            <div className="w-1/2 p-4 flex flex-col overflow-hidden">
+              <h2 className="text-xl font-bold mb-4">Clean Manga Panel</h2>
+              <input type="file" accept="image/*" onChange={handleCleanUpload} className="mb-4 p-2 border rounded bg-gray-200" />
+              {cleanImage && (
+                <button
+                  onClick={downloadEditedPanel}
+                  className="mb-4 px-3 py-1 bg-green-600 text-white rounded text-sm"
+                >
+                  💾 Download Edited Panel
+                </button>
+              )}
+              <button
+                onClick={addCustomText}
+                className="mb-4 px-3 py-1 bg-purple-600 text-white rounded text-sm"
+              >
+                ➕ Add Custom Text
+              </button>
+              {cleanImage && (
+                <div className="relative flex-1 overflow-auto" ref={canvasRef}>
+                  <img
+                    src={cleanImage}
+                    alt="Clean Panel"
+                    className={`w-auto max-w-full max-h-[60vh] object-contain object-left-top border rounded ${placingIndex !== null ? 'cursor-crosshair' : 'cursor-default'}`}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseLeave}
+                  />
+                  {isDrawing && drawStart && drawEnd && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: `${Math.min(drawStart.x, drawEnd.x)}px`,
+                        top: `${Math.min(drawStart.y, drawEnd.y)}px`,
+                        width: `${Math.abs(drawStart.x - drawEnd.x)}px`,
+                        height: `${Math.abs(drawStart.y - drawEnd.y)}px`,
+                        border: "2px dashed blue",
+                        backgroundColor: "rgba(0, 0, 255, 0.1)",
+                        pointerEvents: "none",
+                        zIndex: 10
+                      }}
+                    />
+                  )}
+                  {placedText.map((t, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        position: "absolute",
+                        top: `${t.y}px`,
+                        left: `${t.x}px`,
+                        width: `${t.width}px`,
+                        height: `${t.height}px`,
+                        color: t.color || "#000000",
+                        fontSize: `${t.fontSize || 14}px`,
+                        fontFamily: t.fontFamily || "Arial",
+                        pointerEvents: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        textAlign: "center",
+                        wordBreak: "break-word",
+                        overflow: "hidden",
+                        textShadow: t.color === "#ffffff" ? "1px 1px 2px rgba(0,0,0,0.8)" : "1px 1px 2px rgba(255,255,255,0.8)",
+                        padding: "2px",
+                        lineHeight: "1.2",
+                        maxHeight: `${t.height}px`
+                      }}
+                      title={t.en}
+                    >
+                      {t.en}
+                    </div>
+                  ))}
+                  {customTexts.map((text) => (
+                    text.isPlaced && text.text.trim() !== '' && (
+                      <div
+                        key={text.id}
+                        style={{
+                          position: "absolute",
+                          top: `${text.y}px`,
+                          left: `${text.x}px`,
+                          width: `${text.width}px`,
+                          height: `${text.height}px`,
+                          color: text.color,
+                          fontSize: `${text.fontSize}px`,
+                          fontFamily: text.fontFamily,
+                          pointerEvents: "none",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textAlign: "center",
+                          wordBreak: "break-word",
+                          overflow: "hidden",
+                          textShadow: text.color === "#ffffff" ? "1px 1px 2px rgba(0,0,0,0.8)" : "1px 1px 2px rgba(255,255,255,0.8)",
+                          padding: "2px",
+                          lineHeight: "1.2",
+                          maxHeight: `${text.height}px`
+                        }}
+                        title={text.text}
+                      >
+                        {text.text}
+                      </div>
+                    )
+                  ))}
+                  {placingIndex !== null && (
+                    <div className="absolute top-2 left-2 bg-yellow-500 text-black px-3 py-1 rounded text-sm font-bold z-20">
+                      Click and drag to create text area
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom Row: Translations and Editor */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left Bottom: Translations and Add to Editor */}
+            <div className="w-1/2 p-4 flex flex-col overflow-y-auto">
+              <h2 className="text-xl font-bold mb-4">Translation and Add-to-editor</h2>
               {translations.length > 0 && (
                 <div className="mb-6">
-                  <h2 className="text-xl font-semibold mb-2">Full Panel Translations</h2>
+                  <h3 className="text-lg font-semibold mb-2">Full Panel Translations</h3>
                   {translations.map((line, idx) => (
                     <div key={idx} className="bg-gray-100 p-3 mb-2 rounded">
                       <p className="text-sm mb-1"><strong>JP:</strong> {line.jp}</p>
@@ -903,11 +964,9 @@
                   ))}
                 </div>
               )}
-             
-              {/* Cropped Bubble Translations */}
               {bubbleTranslations.length > 0 && (
                 <div>
-                  <h2 className="text-xl font-semibold mb-2">Cropped Bubble Translations</h2>
+                  <h3 className="text-lg font-semibold mb-2">Cropped Bubble Translations</h3>
                   {bubbleTranslations.map((line, idx) => (
                     <div key={idx} className="bg-yellow-100 p-3 mb-2 rounded">
                       <p className="text-sm mb-1"><strong>JP:</strong> {line.jp}</p>
@@ -920,220 +979,93 @@
                       </button>
                     </div>
                   ))}
+                  <button onClick={clearBubbleTranslations} className="mt-2 px-3 py-1 bg-red-600 text-white rounded text-sm">
+                    🗑️ Clear Crops
+                  </button>
                 </div>
               )}
             </div>
-          </div>
-          {/* Right Panel: Clean Image Upload & Editor */}
-          <div className="w-1/2 p-4 flex flex-col overflow-hidden">
-                         {/* Fixed top section (header, input, clean image) */}
-             <div className="flex-shrink-0 mb-4">
-               <h2 className="text-xl font-bold mb-4">Clean Panel + Translation Editor</h2>
-               <div className="flex justify-between items-center mb-4">
-                 <input type="file" accept="image/*" onChange={handleCleanUpload} className="p-2 border rounded" />
-                 {cleanImage && (
-                   <button
-                     onClick={downloadEditedPanel}
-                     className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                   >
-                     💾 Download Edited Panel
-                   </button>
-                 )}
-               </div>
-               <div className="relative" ref={canvasRef}>
-                {cleanImage && (
-                  <img
-                    src={cleanImage}
-                    alt="Clean Panel"
-                    className={`w-full max-h-80 object-contain border rounded ${placingIndex !== null ? 'cursor-crosshair' : 'cursor-default'}`}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseLeave}
-                  />
+
+            {/* Right Bottom: Editor and Text Placer */}
+            <div className="w-1/2 p-4 flex flex-col overflow-y-auto">
+              <h2 className="text-xl font-bold mb-4">Editor and text placer</h2>
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-semibold">Custom Text Boxes</h3>
+                </div>
+                {customTexts.length > 0 && (
+                  <div className="space-y-3 mb-4">
+                    {customTexts.map((text) => (
+                      <div key={text.id} className="bg-purple-50 border border-purple-200 p-3 rounded">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="text-sm text-purple-600 font-medium">Custom Text #{text.id}</span>
+                          <button
+                            onClick={() => removeCustomText(text.id)}
+                            className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <textarea
+                          className="w-full border rounded p-2 text-sm mb-2 resize-y"
+                          rows="2"
+                          value={text.text}
+                          onChange={(e) => updateCustomText(text.id, 'text', e.target.value)}
+                          placeholder="Enter your custom text here..."
+                        />
+                        <div className="flex items-center space-x-2 flex-wrap">
+                          <button
+                            className={`px-2 py-1 text-sm rounded ${placingIndex === `custom-${text.id}` ? "bg-yellow-500 text-black" : "bg-purple-500 text-white hover:bg-purple-600"}`}
+                            onClick={() => placeCustomText(text.id)}
+                          >
+                            🎯 {placingIndex === `custom-${text.id}` ? "Cancel Placement" : "Draw Text Area"}
+                          </button>
+                          <select
+                            value={text.fontSize}
+                            onChange={(e) => updateCustomText(text.id, 'fontSize', parseInt(e.target.value))}
+                            className="text-sm border p-1 rounded"
+                          >
+                            {[6, 8, 10, 12, 14, 16, 18, 20, 22, 24].map(size => (
+                              <option key={size} value={size}>{size}px</option>
+                            ))}
+                          </select>
+                          <select
+                            value={text.fontFamily}
+                            onChange={(e) => updateCustomText(text.id, 'fontFamily', e.target.value)}
+                            className="text-sm border p-1 rounded"
+                          >
+                            <option value="Arial">Arial</option>
+                            <option value="Comic Sans MS">Comic Sans MS</option>
+                            <option value="Impact">Impact</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Verdana">Verdana</option>
+                          </select>
+                          <button
+                            className="text-sm border px-2 py-1 rounded hover:bg-gray-100"
+                            onClick={() => updateCustomText(text.id, 'color', text.color === "#000000" ? "#ffffff" : "#000000")}
+                          >
+                            {text.color === "#000000" ? "⚫ Black" : "⚪ White"}
+                          </button>
+                          {text.isPlaced && (
+                            <button
+                              className="text-sm text-red-500 underline hover:text-red-700"
+                              onClick={() => removeCustomTextPlacement(text.id)}
+                            >
+                              Remove Placement
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
-                {/* Drawing rectangle for clean image */}
-                {isDrawing && drawStart && drawEnd && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: `${Math.min(drawStart.x, drawEnd.x)}px`,
-                      top: `${Math.min(drawStart.y, drawEnd.y)}px`,
-                      width: `${Math.abs(drawStart.x - drawEnd.x)}px`,
-                      height: `${Math.abs(drawStart.y - drawEnd.y)}px`,
-                      border: "2px dashed blue",
-                      backgroundColor: "rgba(0, 0, 255, 0.1)",
-                      pointerEvents: "none",
-                      zIndex: 10
-                    }}
-                  />
-                )}
-                                 {/* Placed Text */}
-                 {placedText.map((t, i) => (
-                   <div
-                     key={i}
-                     style={{
-                       position: "absolute",
-                       top: `${t.y}px`,
-                       left: `${t.x}px`,
-                       width: `${t.width}px`,
-                       height: `${t.height}px`,
-                       color: t.color || "#000000",
-                       fontSize: `${t.fontSize || 14}px`,
-                       fontFamily: t.fontFamily || "Arial",
-                       pointerEvents: "none",
-                       display: "flex",
-                       alignItems: "center",
-                       justifyContent: "center",
-                       textAlign: "center",
-                       wordBreak: "break-word",
-                       overflow: "hidden",
-                       textShadow: t.color === "#ffffff" ? "1px 1px 2px rgba(0,0,0,0.8)" : "1px 1px 2px rgba(255,255,255,0.8)",
-                       padding: "2px",
-                       lineHeight: "1.2",
-                       maxHeight: `${t.height}px`
-                     }}
-                     title={t.en} // Show full text on hover
-                   >
-                     {t.en}
-                   </div>
-                 ))}
-                 {/* Custom Placed Text */}
-                 {customTexts.map((text) => (
-                   text.isPlaced && text.text.trim() !== '' && (
-                     <div
-                       key={text.id}
-                       style={{
-                         position: "absolute",
-                         top: `${text.y}px`,
-                         left: `${text.x}px`,
-                         width: `${text.width}px`,
-                         height: `${text.height}px`,
-                         color: text.color,
-                         fontSize: `${text.fontSize}px`,
-                         fontFamily: text.fontFamily,
-                         pointerEvents: "none",
-                         display: "flex",
-                         alignItems: "center",
-                         justifyContent: "center",
-                         textAlign: "center",
-                         wordBreak: "break-word",
-                         overflow: "hidden",
-                         textShadow: text.color === "#ffffff" ? "1px 1px 2px rgba(0,0,0,0.8)" : "1px 1px 2px rgba(255,255,255,0.8)",
-                         padding: "2px",
-                         lineHeight: "1.2",
-                         maxHeight: `${text.height}px`
-                       }}
-                       title={text.text}
-                     >
-                       {text.text}
-                     </div>
-                   )
-                 ))}
-                 {/* Placement indicator */}
-                 {placingIndex !== null && (
-                   <div className="absolute top-2 left-2 bg-yellow-500 text-black px-3 py-1 rounded text-sm font-bold z-20">
-                     Click and drag to create text area
-                   </div>
-                 )}
               </div>
-            </div>
-           
-                         {/* Scrollable Translation Controls */}
-             <div className="flex-1 overflow-y-auto min-h-0">
-               {/* Custom Text Section */}
-               <div className="mb-6">
-                 <div className="flex justify-between items-center mb-2">
-                   <h3 className="text-lg font-semibold">Custom Text Boxes</h3>
-                   <button
-                     onClick={addCustomText}
-                     className="bg-purple-600 text-white px-3 py-1 text-sm rounded hover:bg-purple-700"
-                   >
-                     ➕ Add Custom Text
-                   </button>
-                 </div>
-                
-                 {customTexts.length > 0 && (
-                   <div className="space-y-3 mb-4">
-                     {customTexts.map((text) => (
-                       <div key={text.id} className="bg-purple-50 border border-purple-200 p-3 rounded">
-                         <div className="flex justify-between items-start mb-2">
-                           <span className="text-sm text-purple-600 font-medium">Custom Text #{text.id}</span>
-                           <button
-                             onClick={() => removeCustomText(text.id)}
-                             className="ml-2 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-                           >
-                             ✕
-                           </button>
-                         </div>
-                        
-                         <textarea
-                           className="w-full border rounded p-2 text-sm mb-2 resize-y"
-                           rows="2"
-                           value={text.text}
-                           onChange={(e) => updateCustomText(text.id, 'text', e.target.value)}
-                           placeholder="Enter your custom text here..."
-                         />
-                        
-                         <div className="flex items-center space-x-2 flex-wrap">
-                           <button
-                             className={`px-2 py-1 text-sm rounded ${placingIndex === `custom-${text.id}` ? "bg-yellow-500 text-black" : "bg-purple-500 text-white hover:bg-purple-600"}`}
-                             onClick={() => placeCustomText(text.id)}
-                           >
-                             🎯 {placingIndex === `custom-${text.id}` ? "Cancel Placement" : "Draw Text Area"}
-                           </button>
-                          
-                           <select
-                             value={text.fontSize}
-                             onChange={(e) => updateCustomText(text.id, 'fontSize', parseInt(e.target.value))}
-                             className="text-sm border p-1 rounded"
-                           >
-                             {[6, 8, 10, 12, 14, 16, 18, 20, 22, 24].map(size => (
-                               <option key={size} value={size}>{size}px</option>
-                             ))}
-                           </select>
-                          
-                           <select
-                             value={text.fontFamily}
-                             onChange={(e) => updateCustomText(text.id, 'fontFamily', e.target.value)}
-                             className="text-sm border p-1 rounded"
-                           >
-                             <option value="Arial">Arial</option>
-                             <option value="Comic Sans MS">Comic Sans MS</option>
-                             <option value="Impact">Impact</option>
-                             <option value="Times New Roman">Times New Roman</option>
-                             <option value="Verdana">Verdana</option>
-                           </select>
-                          
-                           <button
-                             className="text-sm border px-2 py-1 rounded hover:bg-gray-100"
-                             onClick={() => updateCustomText(text.id, 'color', text.color === "#000000" ? "#ffffff" : "#000000")}
-                           >
-                             {text.color === "#000000" ? "⚫ Black" : "⚪ White"}
-                           </button>
-                          
-                           {text.isPlaced && (
-                             <button
-                               className="text-sm text-red-500 underline hover:text-red-700"
-                               onClick={() => removeCustomTextPlacement(text.id)}
-                             >
-                               Remove Placement
-                             </button>
-                           )}
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 )}
-               </div>
-              
-               {editedTranslations.length > 0 && (
-                 <div>
-                   <div className="flex justify-between items-center mb-2">
-                     <h3 className="text-lg font-semibold">Your Edited Translations</h3>
-                     <button onClick={clearEditor} className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700">Clear All</button>
-                   </div>
-                 
+              {editedTranslations.length > 0 && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-semibold">Your Edited Translations</h3>
+                    <button onClick={clearEditor} className="bg-red-600 text-white px-3 py-1 text-sm rounded hover:bg-red-700">Clear All</button>
+                  </div>
                   <ul className="space-y-3">
                     {editedTranslations.map((line, idx) => (
                       <li key={idx} className="bg-white border p-3 rounded shadow">
@@ -1250,7 +1182,7 @@
             <h1 className="text-6xl font-bold font-impact mb-8 tracking-wider text-red-500 drop-shadow-[0_0_10px_rgba(255,0,0,0.8)] text-center">
               About TsengScans
             </h1>
-           
+          
             {/* Section 1: The Problem - Poor Localizers and Neglected Manga */}
             <section className="mb-12">
               <h2 className="text-4xl font-bold text-red-400 mb-6">The Unprecedented Localization Challenges facing Manga and Anime</h2>
@@ -1267,7 +1199,7 @@
                 <img src="./src/assets/images/niche-series.png" alt="Underrated Manga" className="mt-2 rounded shadow w-full max-w-md mx-auto" />
               </p>
             </section>
-           
+          
             {/* Section 2: The Solution - Your Tool */}
             <section className="mb-12">
               <h2 className="text-4xl font-bold text-red-400 mb-6">TsengScans: Putting translation back in the hands of the fans</h2>
@@ -1275,7 +1207,7 @@
                 TsengScans is built for true fans like you who are done waiting. This AI-powered translator lets you take raw manga panels, obtain accurate translations, and clean them up, providing faithful, uncensored English text. No agendas, just faithful translations that respect the source. Revive those niche series gathering dust, fix ruined classics, and share them with everyone.
               </p>
             </section>
-           
+          
             {/* Section 3: Tutorial */}
             <section>
               <h2 className="text-4xl font-bold text-red-400 mb-6">Quick Tutorial: How to Use TsengScans</h2>
@@ -1331,6 +1263,4 @@
     ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </body>
-
 </html>
-
