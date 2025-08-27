@@ -2,7 +2,7 @@
 A web application that uses GPT-4 Vision to detect and translate Japanese text from manga panels, and allows users to
 edit and place them onto clean manga panels.
 
-![Manga Translator Demo](src/assets/images/demo.png)
+![Manga Translator Demo](src/assets/images/demo-2.png)
 
 ## Features
 
